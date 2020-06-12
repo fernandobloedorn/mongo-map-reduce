@@ -1,0 +1,59 @@
+// Total de postagens com cometários
+map = function() {
+    emit(this.blog.id, {post: 1, comments: parseInt( this.replies.totalItems) });
+}
+reduce = function(key, values) {
+    obj = {post: 0, comments: 0}
+    values.forEach(
+        function(value) {
+            obj.post += value.post;
+            obj.comments += value.comments;
+        }
+    );
+    return obj;
+}
+db.posts.mapReduce(map, reduce, {out: "blogs_posts_comments"});
+
+// Total de postagens por autor
+map = function () {
+    id = this.author.id;
+    name = this.author.displayName.trim().toUpperCase();
+    this.labels.forEach(function (label) {
+      emit({authorId: id, authorName: name, tag: label.trim().toUpperCase()}, 1);
+    });
+};
+reduce = function (key, values) {
+    return Array.sum(values);
+}
+options = { query: { labels: { $ne: null }, author: { $ne: null } }, out: "author_tags" }
+db.posts.mapReduce(map, reduce, options)
+
+// Totalizdor de tags
+map = function () {
+    this.labels.forEach(function (label) {
+        emit(label.trim().toUpperCase(), 1);
+    });
+};
+reduce = function (tag, values) {
+    return Array.sum(values);
+}
+options = { query: { labels: { $ne: null } }, out: "total_tags" }
+db.posts.mapReduce(map, reduce, options)
+
+// Palavras mais comuns 
+map = function() {
+    words = this.title.split(' ');
+    words.forEach(function(word){ 
+        w = word.trim().toUpperCase();
+        if (w.length >= 2 && !"AS-OS-DA-DAS-DO-DOS-DE-NO-NA-EM".includes(w)) { 
+            emit( w, 1 ); 
+        }
+    });
+}
+reduce = function(tag, values) {
+    return Array.sum(values);
+}
+options = {query: {title: { $ne: null}}, out: "posts_titles"}
+db.posts.mapReduce(map, reduce, options)
+
+
