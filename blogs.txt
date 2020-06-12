@@ -45,7 +45,7 @@ map = function() {
     words = this.title.split(' ');
     words.forEach(function(word){ 
         w = word.trim().toUpperCase();
-        if (w.length >= 2 && !"AS-OS-DA-DAS-DO-DOS-DE-NO-NA-EM".includes(w)) { 
+        if (w.length >= 2 && !"AS-OS-DA-DAS-DO-DOS-DE-NO-NA-EM".includes(w)) {  
             emit( w, 1 ); 
         }
     });
